@@ -123,7 +123,7 @@ const SideBar = () => {
                 <li>
                   <div
                     onClick={() => setActiveTab('all-employees')}
-                    className="flex items-center opacity-80 text-white py-4 pl-6 nav-item text-sm cursor-pointer"
+                    className="flex items-center opacity-80 hover:opacity-100 text-white py-4 pl-6 nav-item text-sm cursor-pointer"
                   >
                     <FontAwesomeIcon icon={faMinus} className="w-2 h-2 mr-7" />
                     All Employees
@@ -132,7 +132,7 @@ const SideBar = () => {
                 <li>
                   <div
                     onClick={() => setActiveTab('leave-requests')}
-                    className="flex items-center opacity-80 text-white py-4 pl-6 nav-item text-sm cursor-pointer"
+                    className="flex items-center opacity-80 hover:opacity-100 text-white py-4 pl-6 nav-item text-sm cursor-pointer"
                   >
                     <FontAwesomeIcon icon={faMinus} className="w-2 h-2 mr-7" />
                     Leave Requests
@@ -141,7 +141,7 @@ const SideBar = () => {
                 <li>
                   <div
                     onClick={() => setActiveTab('attendances')}
-                    className="flex items-center opacity-80 text-white py-4 pl-6 nav-item text-sm cursor-pointer"
+                    className="flex items-center opacity-80 hover:opacity-100 text-white py-4 pl-6 nav-item text-sm cursor-pointer"
                   >
                     <FontAwesomeIcon icon={faMinus} className="w-2 h-2 mr-7" />
                     Attendances
@@ -150,7 +150,7 @@ const SideBar = () => {
                 <li>
                   <div
                     onClick={() => setActiveTab('departments')}
-                    className="flex items-center opacity-80 text-white py-4 pl-6 nav-item text-sm cursor-pointer"
+                    className="flex items-center opacity-80 hover:opacity-100 text-white py-4 pl-6 nav-item text-sm cursor-pointer"
                   >
                     <FontAwesomeIcon icon={faMinus} className="w-2 h-2 mr-7" />
                     Departments
