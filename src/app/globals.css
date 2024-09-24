@@ -2,26 +2,28 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@import url('https://fonts.googleapis.com/css2?family=Karla:ital,wght@0,200;1,200&display=swap');
+.font-family-karla {
+  font-family: '__Karla_f3a0e4', '__Karla_Fallback_f3a0e4';
 }
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+.bg-sidebar {
+  background: #3d68ff;
 }
-
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+.cta-btn {
+  color: #3d68ff;
 }
-
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
+.upgrade-btn {
+  background: #1947ee;
+}
+.upgrade-btn:hover {
+  background: #0038fd;
+}
+.active-nav-link {
+  background: #1947ee;
+}
+.nav-item:hover {
+  background: #1947ee;
+}
+.account-link:hover {
+  background: #3d68ff;
 }
