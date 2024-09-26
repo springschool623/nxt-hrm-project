@@ -2,6 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --scroll-bar-thumb: #b9b9b9;
+  --border: #e1e1e1;
+}
+
 @import url('https://fonts.googleapis.com/css2?family=Karla:ital,wght@0,200;1,200&display=swap');
 .font-family-karla {
   font-family: '__Karla_f3a0e4', '__Karla_Fallback_f3a0e4';
@@ -26,4 +31,57 @@
 }
 .account-link:hover {
   background: #3d68ff;
+}
+
+.bd-color {
+  border-color: #3d68ff;
+}
+
+.text-color {
+  color: #3d68ff;
+}
+
+.cus-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 100%;
+}
+
+.cus-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--scroll-bar-thumb);
+  border-radius: 100rem;
+}
+
+.cus-scrollbar::-webkit-scrollbar-track {
+  background: var(--border);
+  border-radius: 100rem;
+}
+
+/* LOADING SPINNER */
+.loading-spinner {
+  border: 8px solid white; /* Viền nhạt */
+  border-left-color: rgb(37 99 235); /* Viền đậm */
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5); /* Màn đen mờ */
+  backdrop-filter: blur(5px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000; /* Đảm bảo hiện trên mọi thứ */
 }
