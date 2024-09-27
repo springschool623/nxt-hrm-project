@@ -33,6 +33,18 @@
   background: #3d68ff;
 }
 
+.left {
+  position: absolute;
+  top: 35%;
+  left: 10%;
+}
+.linear-background {
+  background: url('/images/login-cover.jpg') no-repeat;
+  background-size: 75% 100%; /* Chiếm 3/4 (75%) chiều rộng, 100% chiều cao */
+  background-position: right center; /* Đặt ảnh về bên phải */
+  background-color: #3d68ff; /* Phần 1/4 còn lại sẽ có màu nền */
+}
+
 .bd-color {
   border-color: #3d68ff;
 }

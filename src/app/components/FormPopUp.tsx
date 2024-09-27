@@ -177,7 +177,37 @@ const FormPopUp: React.FC<FormPopUpProps> = ({
               </small>
             )}
           </div>
-
+          {/* Social Media Links */}
+          {/* <div className="mb-4 grid grid-cols-2 gap-2 pt-2 border-t">
+            <div>
+              <label className="block text-gray-700">Facebook</label>
+              <input
+                type="text"
+                className="w-full px-3 py-2 border rounded outline-none"
+              />
+            </div>
+            <div>
+              <label className="block text-gray-700">Twitter</label>
+              <input
+                type="text"
+                className="w-full px-3 py-2 border rounded outline-none"
+              />
+            </div>
+            <div>
+              <label className="block text-gray-700">LinkedIn</label>
+              <input
+                type="text"
+                className="w-full px-3 py-2 border rounded outline-none"
+              />
+            </div>
+            <div>
+              <label className="block text-gray-700">Instagram</label>
+              <input
+                type="text"
+                className="w-full px-3 py-2 border rounded outline-none"
+              />
+            </div>
+          </div> */}
           <div className="flex justify-end gap-4">
             <button
               type="button"

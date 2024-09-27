@@ -5,6 +5,7 @@ import {
   faX,
 } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import Link from 'next/link'
 import React, { useState } from 'react'
 
 const Header = () => {
@@ -16,12 +17,12 @@ const Header = () => {
       <header className="w-full items-center bg-white py-2 px-6 hidden sm:flex">
         <div className="w-1/2"></div>
         <div className="relative w-1/2 flex justify-end">
-          <button className="z-10 w-12 h-12">
+          <Link href="/auth/login" className="flex items-center z-10 w-12 h-12">
             <FontAwesomeIcon
               icon={faArrowRightFromBracket}
               className="w-5 h-5"
             />
-          </button>
+          </Link>
         </div>
       </header>
 
