@@ -99,9 +99,9 @@ const Home = () => {
               className="w-12 h-12 rounded-lg"
             />
             <div className="relative ml-2 flex flex-col text-white">
-              <span className="font-light">Welcome,</span>
-              <span className="font-bold flex items-center cursor-pointer relative group">
-                Truong Nguyen
+              <span className="font-light text-sm">Welcome,</span>
+              <span className="font-bold flex cursor-pointer relative group text-sm">
+                Nguyen Xuan Truong
                 <FontAwesomeIcon icon={faCaretDown} className="w-4 h-4 ml-2" />
                 <div className="invisible opacity-0 text-sm transform translate-y-[-16px] group-hover:visible group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 ease-out font-normal absolute w-32 bg-white rounded-lg shadow-lg py-2 px-4 top-8 right-0">
                   <a href="#" className="block text-black my-2">

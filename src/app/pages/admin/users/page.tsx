@@ -6,6 +6,7 @@ import BodyLayout from '@/app/layout/BodyLayout'
 import { faPenToSquare, faTrashCan } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { User } from '@/app/models/userModel'
+import Image from 'next/image'
 
 const Users: React.FC = () => {
   const [users, setUsers] = useState<User[]>([])
@@ -32,7 +33,7 @@ const Users: React.FC = () => {
         userRole: user.userRoleType,
         createDate: new Date(user.createdAt).toLocaleDateString(),
         employeeRole: user.employeeInfo?.role || 'Unknown', // Lấy role từ employeeInfo
-        avatar: user.employeeInfo?.avatar || 'default-avatar-url', // Nếu không có avatar, dùng avatar mặc định
+        avatar: user.employeeInfo?.avatar || '/images/realmadrid.jpg', // Nếu không có avatar, dùng avatar mặc định
       }))
       setUsers(transformedData)
       setFilteredUsers(transformedData)
@@ -54,11 +55,13 @@ const Users: React.FC = () => {
   useEffect(() => {
     const filtered = users.filter(
       (user) =>
+        user.employeeId?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         user.userRole?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         user.employeeRole?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.createDate?.toLowerCase().includes(searchTerm.toLowerCase())
+        user.createDate?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.avatar?.toLowerCase().includes(searchTerm.toLowerCase())
     )
     setFilteredUsers(filtered)
   }, [searchTerm, users])
@@ -136,8 +139,6 @@ const Users: React.FC = () => {
       <BodyLayout>
         <h1 className="text-3xl text-black pb-6">All Users</h1>
         <div className="w-full">
-          {isDeleting && <p>Loading...</p>}
-          {/* Hiển thị Loading khi đang xóa */}
           <div className="flex justify-end mt-8 gap-2">
             <input
               type="text"
@@ -187,7 +188,13 @@ const Users: React.FC = () => {
                   {currentUsers.map((user, index) => (
                     <tr key={index} className="hover:bg-grey-lighter">
                       <td className="py-4 px-6 border-b border-grey-light">
-                        {user.avatar}
+                        <Image
+                          src={user.avatar}
+                          alt="Avatar"
+                          width={400}
+                          height={400}
+                          className="w-12 h-12 rounded-lg"
+                        />
                       </td>
                       <td className="py-4 px-6 border-b border-grey-light">
                         {user.name}

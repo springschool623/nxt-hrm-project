@@ -31,9 +31,12 @@ const Login = () => {
         // Lưu token vào localStorage hoặc sessionStorage
         document.cookie = `token=${data.token}; path=/; max-age=3600` // max-age=3600 là 1 giờ
         localStorage.setItem('userRole', data.userRoleType) // Lưu userRole vào localStorage
+        localStorage.setItem('employeeId', data.employeeId) // Lưu userRole vào localStorage
+
         // Sử dụng router để chuyển hướng người dùng đến trang chính
         router.push('/') // Điều hướng đến trang chủ
         console.log('Login thành công')
+        console.log(data.employeeId)
       } else {
         // Hiển thị lỗi nếu đăng nhập không thành công
         setError(data.message || 'Login failed')

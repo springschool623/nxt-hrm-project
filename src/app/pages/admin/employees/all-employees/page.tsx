@@ -138,8 +138,6 @@ const AllEmployees: React.FC = () => {
       <BodyLayout>
         <h1 className="text-3xl text-black pb-6">All Employees</h1>
         <div className="w-full">
-          {isDeleting && <p>Loading...</p>}
-          {/* Hiển thị Loading khi đang xóa */}
           <div className="flex justify-end gap-2">
             <button
               onClick={togglePopUp}
