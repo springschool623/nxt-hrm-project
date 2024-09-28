@@ -7,7 +7,7 @@ import { faPenToSquare, faTrashCan } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { Employee } from '@/app/models/employeeModel'
 
-const Users: React.FC = () => {
+const AllEmployees: React.FC = () => {
   const [employees, setEmployees] = useState<Employee[]>([])
   const [currentPage, setCurrentPage] = useState<number>(1)
   const [itemsPerPage, setItemsPerPage] = useState<number>(10)
@@ -21,7 +21,9 @@ const Users: React.FC = () => {
 
   const fetchEmployees = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/employees/list')
+      const response = await fetch(
+        'http://localhost:5000/api/employees/current-employee-list'
+      )
       const data = await response.json()
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const transformedData = data.map((employee: any) => ({
@@ -59,29 +61,36 @@ const Users: React.FC = () => {
     setCurrentPage(page)
   }
 
-  const handleDeleteEmployee = async (employeeId: string) => {
+  const handleDeactivateEmployee = async (employeeId: string) => {
     setIsDeleting(true) // Bắt đầu quá trình xóa, hiển thị loading
     try {
-      // Delay 5 giây trước khi thực hiện xóa
+      // Delay 2 giây trước khi thực hiện xóa
       await new Promise((resolve) => setTimeout(resolve, 2000))
 
       const response = await fetch(
-        `http://localhost:5000/api/employees/delete/${employeeId}`,
+        `http://localhost:5000/api/employees/change-status/${employeeId}`,
         {
-          method: 'DELETE',
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ status: 'inactive' }), // Cập nhật trạng thái thành inactive
         }
       )
       if (response.ok) {
         // Xóa nhân viên thành công, cập nhật lại danh sách nhân viên
-        const updatedEmployees = employees.filter(
-          (employee) => employee.employeeId !== employeeId
+        const updatedEmployees = employees.filter((employee) =>
+          employee.employeeId === employeeId
+            ? { ...employee, status: 'inactive' } // Cập nhật trạng thái trong danh sách hiện tại
+            : employee
         )
         setEmployees(updatedEmployees)
         setFilteredEmployees(updatedEmployees)
+        console.log(employeeId)
       }
     } catch (error) {
-      console.error('Failed to delete employee:', error)
-      alert('An error occurred while deleting the employee')
+      console.error('Failed to deactivate employee: ', error)
+      alert('An error occurred while deactivating the employee')
     } finally {
       setIsDeleting(false) // Kết thúc quá trình xóa, tắt loading
     }
@@ -225,7 +234,7 @@ const Users: React.FC = () => {
                         <button
                           className="w-9 h-8 rounded bg-red-600"
                           onClick={() =>
-                            handleDeleteEmployee(employee.employeeId)
+                            handleDeactivateEmployee(employee.employeeId)
                           } // Gọi hàm xóa nhân viên
                         >
                           <FontAwesomeIcon
@@ -274,4 +283,4 @@ const Users: React.FC = () => {
   )
 }
 
-export default Users
+export default AllEmployees

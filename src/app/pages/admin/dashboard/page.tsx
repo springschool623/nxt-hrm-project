@@ -1,7 +1,7 @@
 import Header from '@/app/components/Header'
 import BodyLayout from '@/app/layout/BodyLayout'
 
-export default function Home() {
+export default function Dashboard() {
   return (
     <div className="relative w-full flex flex-col h-screen overflow-y-hidden">
       <Header />

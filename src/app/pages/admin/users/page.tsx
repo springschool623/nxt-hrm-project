@@ -5,55 +5,63 @@ import Pagination from '@/app/components/Pagination'
 import BodyLayout from '@/app/layout/BodyLayout'
 import { faPenToSquare, faTrashCan } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { Employee } from '@/app/models/employeeModel'
+import { User } from '@/app/models/userModel'
 
-const AllEmployees: React.FC = () => {
-  const [employees, setEmployees] = useState<Employee[]>([])
+const Users: React.FC = () => {
+  const [users, setUsers] = useState<User[]>([])
   const [currentPage, setCurrentPage] = useState<number>(1)
   const [itemsPerPage, setItemsPerPage] = useState<number>(10)
   const [searchTerm, setSearchTerm] = useState<string>('')
   const [isDeleting, setIsDeleting] = useState<boolean>(false)
-  const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null)
-  const [filteredEmployees, setFilteredEmployees] =
-    useState<Employee[]>(employees)
+  const [editingUser, setEditingUser] = useState<User | null>(null)
+  const [filteredUsers, setFilteredUsers] = useState<User[]>(users)
   const [showPopUp, setShowPopUp] = useState<boolean>(false)
-  const totalItems = filteredEmployees.length
+  const totalItems = filteredUsers.length
+  const [currentUserRole, setCurrentUserRole] = useState<string | null>(null) // State cho user role hiện tại
 
-  const fetchEmployees = async () => {
+  const fetchUsers = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/employees/list')
+      const response = await fetch('http://localhost:5000/api/users/list')
       const data = await response.json()
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const transformedData = data.map((employee: any) => ({
-        name: employee.name,
-        email: employee.email,
-        employeeId: employee.employeeId,
-        phone: employee.phone,
-        joinDate: new Date(employee.joinDate).toLocaleDateString(),
-        role: employee.role,
+      const transformedData = data.map((user: any) => ({
+        employeeId: user.employeeId,
+        name: user.employeeInfo?.name || 'Unknown', // Lấy từ employeeInfo
+        email: user.employeeInfo?.email || user.email, // Ưu tiên email từ employeeInfo nếu có
+        userRole: user.userRoleType,
+        createDate: new Date(user.createdAt).toLocaleDateString(),
+        employeeRole: user.employeeInfo?.role || 'Unknown', // Lấy role từ employeeInfo
+        avatar: user.employeeInfo?.avatar || 'default-avatar-url', // Nếu không có avatar, dùng avatar mặc định
       }))
-      setEmployees(transformedData)
-      setFilteredEmployees(transformedData)
+      setUsers(transformedData)
+      setFilteredUsers(transformedData)
     } catch (error) {
-      console.error('Failed to fetch employees:', error)
+      console.error('Failed to fetch users:', error)
     }
   }
+
   useEffect(() => {
-    fetchEmployees()
+    // Lấy userRole từ localStorage khi component mount
+    const userRoleFromStorage = localStorage.getItem('userRole')
+    setCurrentUserRole(userRoleFromStorage)
+    console.log(userRoleFromStorage)
+
+    // Fetch users
+    fetchUsers()
   }, [])
 
   useEffect(() => {
-    const filtered = employees.filter(
-      (employee) =>
-        employee.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        employee.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        employee.employeeId?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        employee.phone?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        employee.joinDate?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        employee.role?.toLowerCase().includes(searchTerm.toLowerCase())
+    const filtered = users.filter(
+      (user) =>
+        user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.userRole?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.employeeRole?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.createDate?.toLowerCase().includes(searchTerm.toLowerCase())
     )
-    setFilteredEmployees(filtered)
-  }, [searchTerm, employees])
+    setFilteredUsers(filtered)
+  }, [searchTerm, users])
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page)
@@ -66,39 +74,39 @@ const AllEmployees: React.FC = () => {
       await new Promise((resolve) => setTimeout(resolve, 2000))
 
       const response = await fetch(
-        `http://localhost:5000/api/employees/delete/${employeeId}`,
+        `http://localhost:5000/api/users/delete/${employeeId}`,
         {
           method: 'DELETE',
         }
       )
       if (response.ok) {
         // Xóa nhân viên thành công, cập nhật lại danh sách nhân viên
-        const updatedEmployees = employees.filter(
-          (employee) => employee.employeeId !== employeeId
+        const updatedUsers = users.filter(
+          (user) => user.employeeId !== employeeId
         )
-        setEmployees(updatedEmployees)
-        setFilteredEmployees(updatedEmployees)
+        setUsers(updatedUsers)
+        setFilteredUsers(updatedUsers)
       }
     } catch (error) {
-      console.error('Failed to delete employee:', error)
-      alert('An error occurred while deleting the employee')
+      console.error('Failed to delete user:', error)
+      alert('An error occurred while deleting the user')
     } finally {
       setIsDeleting(false) // Kết thúc quá trình xóa, tắt loading
     }
   }
 
-  const handleEditEmployee = async (employeeId: string) => {
+  const handleEditUser = async (employeeId: string) => {
     try {
       const response = await fetch(
-        `http://localhost:5000/api/employees/${employeeId}`
+        `http://localhost:5000/api/users/${employeeId}`
       )
       if (response.ok) {
-        const employeeData = await response.json()
-        setEditingEmployee(employeeData) // Lưu thông tin nhân viên vào state
+        const userData = await response.json()
+        setEditingUser(userData) // Lưu thông tin nhân viên vào state
         setShowPopUp(true) // Hiển thị popup chỉnh sửa
       }
     } catch (error) {
-      console.error('Failed to fetch employee details:', error)
+      console.error('Failed to fetch user details:', error)
     }
   }
 
@@ -107,12 +115,9 @@ const AllEmployees: React.FC = () => {
     setCurrentPage(1)
   }
 
-  const indexOfLastEmployee = currentPage * itemsPerPage
-  const indexOfFirstEmployee = indexOfLastEmployee - itemsPerPage
-  const currentEmployees = filteredEmployees.slice(
-    indexOfFirstEmployee,
-    indexOfLastEmployee
-  )
+  const indexOfLastUser = currentPage * itemsPerPage
+  const indexOfFirstUser = indexOfLastUser - itemsPerPage
+  const currentUsers = filteredUsers.slice(indexOfFirstUser, indexOfLastUser)
 
   const togglePopUp = () => {
     setShowPopUp(!showPopUp)
@@ -120,26 +125,19 @@ const AllEmployees: React.FC = () => {
 
   // Hàm xử lý thêm nhân viên mới
   const handleAddEmployee = () => {
-    fetchEmployees()
+    fetchUsers()
   }
+  const canPerformAction =
+    currentUserRole === 'Super Admin' || currentUserRole === 'Admin'
 
   return (
     <div className="relative w-full flex flex-col h-screen overflow-y-hidden">
       <Header />
       <BodyLayout>
-        <h1 className="text-3xl text-black pb-6">All Employees</h1>
+        <h1 className="text-3xl text-black pb-6">All Users</h1>
         <div className="w-full">
           {isDeleting && <p>Loading...</p>}
           {/* Hiển thị Loading khi đang xóa */}
-          <div className="flex justify-end gap-2">
-            <button
-              onClick={togglePopUp}
-              className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-transparent hover:text-blue-600 border border-blue-600"
-              disabled={isDeleting} // Disable nút khi đang xóa
-            >
-              Add New
-            </button>
-          </div>
           <div className="flex justify-end mt-8 gap-2">
             <input
               type="text"
@@ -156,12 +154,12 @@ const AllEmployees: React.FC = () => {
             </button>
           </div>
           <div className="bg-white overflow-auto mt-4">
-            {currentEmployees.length > 0 ? (
+            {currentUsers.length > 0 ? (
               <table className="text-left w-full border-collapse">
                 <thead>
                   <tr>
                     <th className="py-4 px-6 bg-grey-lightest font-bold uppercase text-sm text-grey-dark border-b-2 border-grey-light">
-                      <input type="checkbox" />
+                      Avatar
                     </th>
                     <th className="py-4 px-6 bg-grey-lightest font-bold uppercase text-sm text-grey-dark border-b-2 border-grey-light">
                       Name
@@ -170,70 +168,66 @@ const AllEmployees: React.FC = () => {
                       Email
                     </th>
                     <th className="py-4 px-6 bg-grey-lightest font-bold uppercase text-sm text-grey-dark border-b-2 border-grey-light">
-                      Employee ID
+                      User Role
                     </th>
                     <th className="py-4 px-6 bg-grey-lightest font-bold uppercase text-sm text-grey-dark border-b-2 border-grey-light">
-                      Phone
-                    </th>
-                    <th className="py-4 px-6 bg-grey-lightest font-bold uppercase text-sm text-grey-dark border-b-2 border-grey-light">
-                      Join Date
+                      Create Date
                     </th>
                     <th className="py-4 px-6 bg-grey-lightest font-bold uppercase text-sm text-grey-dark border-b-2 border-grey-light">
                       Role
                     </th>
-                    <th className="py-4 px-6 bg-grey-lightest font-bold uppercase text-sm text-grey-dark border-b-2 border-grey-light">
-                      Action
-                    </th>
+                    {canPerformAction && (
+                      <th className="py-4 px-6 bg-grey-lightest font-bold uppercase text-sm text-grey-dark border-b-2 border-grey-light">
+                        Action
+                      </th>
+                    )}
                   </tr>
                 </thead>
                 <tbody>
-                  {currentEmployees.map((employee, index) => (
+                  {currentUsers.map((user, index) => (
                     <tr key={index} className="hover:bg-grey-lighter">
                       <td className="py-4 px-6 border-b border-grey-light">
-                        <input type="checkbox" />
+                        {user.avatar}
                       </td>
                       <td className="py-4 px-6 border-b border-grey-light">
-                        {employee.name}
+                        {user.name}
                       </td>
                       <td className="py-4 px-6 border-b border-grey-light">
-                        {employee.email}
+                        {user.email}
                       </td>
                       <td className="py-4 px-6 border-b border-grey-light">
-                        {employee.employeeId}
+                        {user.userRole}
                       </td>
                       <td className="py-4 px-6 border-b border-grey-light">
-                        {employee.phone}
+                        {user.createDate}
                       </td>
                       <td className="py-4 px-6 border-b border-grey-light">
-                        {employee.joinDate}
+                        {user.employeeRole}
                       </td>
-                      <td className="py-4 px-6 border-b border-grey-light">
-                        {employee.role}
-                      </td>
-                      <td className="flex gap-x-2 py-4 px-6 border-b border-grey-light">
-                        <button
-                          className="w-9 h-8 rounded bg-blue-500"
-                          onClick={() =>
-                            handleEditEmployee(employee.employeeId)
-                          } // Gọi hàm chỉnh sửa
-                        >
-                          <FontAwesomeIcon
-                            icon={faPenToSquare}
-                            className="text-white"
-                          />
-                        </button>
-                        <button
-                          className="w-9 h-8 rounded bg-red-600"
-                          onClick={() =>
-                            handleDeleteEmployee(employee.employeeId)
-                          } // Gọi hàm xóa nhân viên
-                        >
-                          <FontAwesomeIcon
-                            icon={faTrashCan}
-                            className="text-white"
-                          />
-                        </button>
-                      </td>
+                      {canPerformAction && (
+                        <td className="flex gap-x-2 py-4 px-6 border-b border-grey-light">
+                          <button
+                            className="w-9 h-8 rounded bg-blue-500"
+                            onClick={() => handleEditUser(user.employeeId)}
+                          >
+                            <FontAwesomeIcon
+                              icon={faPenToSquare}
+                              className="text-white"
+                            />
+                          </button>
+                          <button
+                            className="w-9 h-8 rounded bg-red-600"
+                            onClick={() =>
+                              handleDeleteEmployee(user.employeeId)
+                            }
+                          >
+                            <FontAwesomeIcon
+                              icon={faTrashCan}
+                              className="text-white"
+                            />
+                          </button>
+                        </td>
+                      )}
                     </tr>
                   ))}
                 </tbody>
@@ -245,7 +239,7 @@ const AllEmployees: React.FC = () => {
             )}
           </div>
         </div>
-        {currentEmployees.length > 0 && (
+        {currentUsers.length > 0 && (
           <Pagination
             totalItems={totalItems}
             currentPage={currentPage}
@@ -267,11 +261,11 @@ const AllEmployees: React.FC = () => {
         <FormPopUp
           onClose={togglePopUp}
           onAddEmployee={handleAddEmployee}
-          employee={editingEmployee} // Truyền dữ liệu nhân viên đang chỉnh sửa
+          employee={editingUser} // Truyền dữ liệu nhân viên đang chỉnh sửa
         />
       )}
     </div>
   )
 }
 
-export default AllEmployees
+export default Users

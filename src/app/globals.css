@@ -97,3 +97,17 @@
   align-items: center;
   z-index: 1000; /* Đảm bảo hiện trên mọi thứ */
 }
+
+.loading-overlay_login {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(61, 104, 255, 0.1); /* Màn đen mờ */
+  backdrop-filter: blur(5px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000; /* Đảm bảo hiện trên mọi thứ */
+}

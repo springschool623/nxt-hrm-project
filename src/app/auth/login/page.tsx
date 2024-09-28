@@ -1,13 +1,16 @@
 'use client'
+
 import { faLock } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import Link from 'next/link'
 import React, { useState } from 'react'
+import { useRouter } from 'next/navigation' // Import useRouter từ Next.js
 
 const Login = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const router = useRouter() // Khởi tạo router
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -26,9 +29,11 @@ const Login = () => {
 
       if (response.ok) {
         // Lưu token vào localStorage hoặc sessionStorage
-        localStorage.setItem('token', data.token)
-        // Chuyển hướng người dùng đến trang chính (ví dụ: /dashboard)
-        window.location.href = '/'
+        document.cookie = `token=${data.token}; path=/; max-age=3600` // max-age=3600 là 1 giờ
+        localStorage.setItem('userRole', data.userRoleType) // Lưu userRole vào localStorage
+        // Sử dụng router để chuyển hướng người dùng đến trang chính
+        router.push('/') // Điều hướng đến trang chủ
+        console.log('Login thành công')
       } else {
         // Hiển thị lỗi nếu đăng nhập không thành công
         setError(data.message || 'Login failed')

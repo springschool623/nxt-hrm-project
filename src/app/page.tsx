@@ -9,24 +9,42 @@ import {
   faUsers,
 } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Image from 'next/image'
-import Home from './(pages)/home/page'
-import Activities from './(pages)/activities/page'
-import Users from './(pages)/users/page'
-import AllEmployees from './(pages)/employees/all-employees/page'
-import Attendances from './(pages)/employees/attendances/page'
-import Departments from './(pages)/employees/departments/page'
-import LeaveRequests from './(pages)/employees/leave-requests/page'
+import { useRouter } from 'next/navigation'
+import Dashboard from './pages/admin/dashboard/page'
+import Activities from './pages/admin/activities/page'
+import AllEmployees from './pages/admin/employees/all-employees/page'
+import Attendances from './pages/admin/employees/attendances/page'
+import Departments from './pages/admin/employees/departments/page'
+import LeaveRequests from './pages/admin/employees/leave-requests/page'
+import Users from './pages/admin/users/page'
+import EmployeeLeaveRequests from './pages/client/employee-leave-requests/page'
 
-const SideBar = () => {
+const Home = () => {
   const [isEmployeesOpen, setIsEmployeesOpen] = useState(false)
   const [activeTab, setActiveTab] = useState('home')
+  const router = useRouter()
+  const [loading, setLoading] = useState(true) // Loading state
+  const [currentUserRole, setCurrentUserRole] = useState<string | null>(null) // State cho user role hiện tại
+
+  // Simulate loading for 3 seconds
+  useEffect(() => {
+    // Lấy userRole từ localStorage khi component mount
+    const userRoleFromStorage = localStorage.getItem('userRole')
+    setCurrentUserRole(userRoleFromStorage)
+    // Show loading screen for 3 seconds
+    const timer = setTimeout(() => {
+      setLoading(false)
+    }, 2000)
+
+    return () => clearTimeout(timer) // Cleanup timeout if the component is unmounted
+  }, [router])
 
   const renderContent = () => {
     switch (activeTab) {
       case 'home':
-        return <Home />
+        return <Dashboard />
       case 'activities':
         return <Activities />
       case 'all-employees':
@@ -39,6 +57,8 @@ const SideBar = () => {
         return <LeaveRequests />
       case 'users':
         return <Users />
+      case 'employee-leave-requests':
+        return <EmployeeLeaveRequests />
       default:
         return null
     }
@@ -46,6 +66,18 @@ const SideBar = () => {
 
   const toggleEmployeesMenu = () => {
     setIsEmployeesOpen(!isEmployeesOpen)
+  }
+
+  const canPerformAction = currentUserRole !== 'Employee'
+
+  if (loading) {
+    return (
+      <div className="loading-wrapper">
+        <div className="loading-overlay_login">
+          <div className="loading-spinner"></div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -88,13 +120,17 @@ const SideBar = () => {
           </div>
         </div>
         <nav className="text-white text-base font-semibold pt-3">
-          <div
-            onClick={() => setActiveTab('home')}
-            className="flex items-center active-nav-link text-white py-4 pl-6 nav-item cursor-pointer"
-          >
-            <FontAwesomeIcon icon={faHome} className="w-6 h-6 mr-3" />
-            HR Dashboard
-          </div>
+          {canPerformAction && (
+            <>
+              <div
+                onClick={() => setActiveTab('dashboard')}
+                className="flex items-center active-nav-link text-white py-4 pl-6 nav-item cursor-pointer"
+              >
+                <FontAwesomeIcon icon={faHome} className="w-6 h-6 mr-3" />
+                HR Dashboard
+              </div>
+            </>
+          )}
           <div
             onClick={() => setActiveTab('activities')}
             className="flex items-center text-white py-4 pl-6 nav-item cursor-pointer"
@@ -102,70 +138,97 @@ const SideBar = () => {
             <FontAwesomeIcon icon={faStickyNote} className="w-6 h-6 mr-3" />
             Activities
           </div>
-          <div>
-            <div
-              onClick={toggleEmployeesMenu}
-              className="flex items-center justify-between text-white py-4 pl-6 nav-item cursor-pointer"
-            >
-              <div className="flex">
-                <FontAwesomeIcon icon={faUsers} className="w-6 h-6 mr-3" />
-                Employees
+          {!canPerformAction && (
+            <>
+              <div
+                onClick={() => setActiveTab('employee-leave-requests')}
+                className="flex items-center text-white py-4 pl-6 nav-item cursor-pointer"
+              >
+                <FontAwesomeIcon icon={faStickyNote} className="w-6 h-6 mr-3" />
+                Leave Requests
               </div>
-              <FontAwesomeIcon
-                icon={faAngleLeft}
-                className={`w-4 h-4 mr-4 transition-transform duration-300 ${
-                  isEmployeesOpen ? '-rotate-90' : ''
-                }`}
-              />
-            </div>
-            {isEmployeesOpen && (
-              <ul>
-                <li>
-                  <div
-                    onClick={() => setActiveTab('all-employees')}
-                    className="flex items-center opacity-80 hover:opacity-100 text-white py-4 pl-6 nav-item text-sm cursor-pointer"
-                  >
-                    <FontAwesomeIcon icon={faMinus} className="w-2 h-2 mr-7" />
-                    All Employees
+            </>
+          )}
+          {canPerformAction && (
+            <>
+              <div>
+                <div
+                  onClick={toggleEmployeesMenu}
+                  className="flex items-center justify-between text-white py-4 pl-6 nav-item cursor-pointer"
+                >
+                  <div className="flex">
+                    <FontAwesomeIcon icon={faUsers} className="w-6 h-6 mr-3" />
+                    Employees
                   </div>
-                </li>
-                <li>
-                  <div
-                    onClick={() => setActiveTab('leave-requests')}
-                    className="flex items-center opacity-80 hover:opacity-100 text-white py-4 pl-6 nav-item text-sm cursor-pointer"
-                  >
-                    <FontAwesomeIcon icon={faMinus} className="w-2 h-2 mr-7" />
-                    Leave Requests
-                  </div>
-                </li>
-                <li>
-                  <div
-                    onClick={() => setActiveTab('attendances')}
-                    className="flex items-center opacity-80 hover:opacity-100 text-white py-4 pl-6 nav-item text-sm cursor-pointer"
-                  >
-                    <FontAwesomeIcon icon={faMinus} className="w-2 h-2 mr-7" />
-                    Attendances
-                  </div>
-                </li>
-                <li>
-                  <div
-                    onClick={() => setActiveTab('departments')}
-                    className="flex items-center opacity-80 hover:opacity-100 text-white py-4 pl-6 nav-item text-sm cursor-pointer"
-                  >
-                    <FontAwesomeIcon icon={faMinus} className="w-2 h-2 mr-7" />
-                    Departments
-                  </div>
-                </li>
-              </ul>
-            )}
-          </div>
-          <div
-            onClick={() => setActiveTab('users')}
-            className="flex items-center text-white py-4 pl-6 nav-item cursor-pointer"
-          >
-            <FontAwesomeIcon icon={faUser} className="w-6 h-6 mr-3" />
-            Users
-          </div>
+                  <FontAwesomeIcon
+                    icon={faAngleLeft}
+                    className={`w-4 h-4 mr-4 transition-transform duration-300 ${
+                      isEmployeesOpen ? '-rotate-90' : ''
+                    }`}
+                  />
+                </div>
+                {isEmployeesOpen && (
+                  <ul>
+                    <li>
+                      <div
+                        onClick={() => setActiveTab('all-employees')}
+                        className="flex items-center opacity-80 hover:opacity-100 text-white py-4 pl-6 nav-item text-sm cursor-pointer"
+                      >
+                        <FontAwesomeIcon
+                          icon={faMinus}
+                          className="w-2 h-2 mr-7"
+                        />
+                        All Employees
+                      </div>
+                    </li>
+                    <li>
+                      <div
+                        onClick={() => setActiveTab('leave-requests')}
+                        className="flex items-center opacity-80 hover:opacity-100 text-white py-4 pl-6 nav-item text-sm cursor-pointer"
+                      >
+                        <FontAwesomeIcon
+                          icon={faMinus}
+                          className="w-2 h-2 mr-7"
+                        />
+                        Leave Requests
+                      </div>
+                    </li>
+                    <li>
+                      <div
+                        onClick={() => setActiveTab('attendances')}
+                        className="flex items-center opacity-80 hover:opacity-100 text-white py-4 pl-6 nav-item text-sm cursor-pointer"
+                      >
+                        <FontAwesomeIcon
+                          icon={faMinus}
+                          className="w-2 h-2 mr-7"
+                        />
+                        Attendances
+                      </div>
+                    </li>
+                    <li>
+                      <div
+                        onClick={() => setActiveTab('departments')}
+                        className="flex items-center opacity-80 hover:opacity-100 text-white py-4 pl-6 nav-item text-sm cursor-pointer"
+                      >
+                        <FontAwesomeIcon
+                          icon={faMinus}
+                          className="w-2 h-2 mr-7"
+                        />
+                        Departments
+                      </div>
+                    </li>
+                  </ul>
+                )}
+              </div>
+              <div
+                onClick={() => setActiveTab('users')}
+                className="flex items-center text-white py-4 pl-6 nav-item cursor-pointer"
+              >
+                <FontAwesomeIcon icon={faUser} className="w-6 h-6 mr-3" />
+                Users
+              </div>
+            </>
+          )}
         </nav>
       </aside>
       {renderContent()}
@@ -173,4 +236,4 @@ const SideBar = () => {
   )
 }
 
-export default SideBar
+export default Home

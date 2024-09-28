@@ -5,11 +5,21 @@ import {
   faX,
 } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import React, { useState } from 'react'
 
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false)
+  const router = useRouter() // Khởi tạo router để điều hướng
+
+  // Hàm xử lý logout
+  const handleLogout = () => {
+    // Xóa token khỏi cookie
+    document.cookie = 'token=; path=/; max-age=0' // Xóa cookie token
+
+    // Điều hướng về trang login
+    router.push('/auth/login')
+  }
 
   return (
     <>
@@ -17,12 +27,15 @@ const Header = () => {
       <header className="w-full items-center bg-white py-2 px-6 hidden sm:flex">
         <div className="w-1/2"></div>
         <div className="relative w-1/2 flex justify-end">
-          <Link href="/auth/login" className="flex items-center z-10 w-12 h-12">
+          <button
+            onClick={handleLogout} // Gọi hàm handleLogout khi nhấn vào nút
+            className="flex items-center z-10 w-12 h-12"
+          >
             <FontAwesomeIcon
               icon={faArrowRightFromBracket}
               className="w-5 h-5"
             />
-          </Link>
+          </button>
         </div>
       </header>
 
