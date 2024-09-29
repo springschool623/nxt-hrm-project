@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react'
-import FormPopUp from '@/app/components/FormPopUp'
 import Header from '@/app/components/Header'
 import Pagination from '@/app/components/Pagination'
 import BodyLayout from '@/app/layout/BodyLayout'
 import { faPenToSquare, faTrashCan } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { Employee } from '@/app/models/employeeModel'
+import FormPopUpEmployee from '@/app/components/FormPopUpEmployee'
 
 const AllEmployees: React.FC = () => {
   const [employees, setEmployees] = useState<Employee[]>([])
@@ -217,29 +217,25 @@ const AllEmployees: React.FC = () => {
                       <td className="py-4 px-6 border-b border-grey-light">
                         {employee.role}
                       </td>
-                      <td className="flex gap-x-2 py-4 px-6 border-b border-grey-light">
-                        <button
-                          className="w-9 h-8 rounded bg-blue-500"
-                          onClick={() =>
-                            handleEditEmployee(employee.employeeId)
-                          } // Gọi hàm chỉnh sửa
-                        >
-                          <FontAwesomeIcon
-                            icon={faPenToSquare}
-                            className="text-white"
-                          />
-                        </button>
-                        <button
-                          className="w-9 h-8 rounded bg-red-600"
-                          onClick={() =>
-                            handleDeactivateEmployee(employee.employeeId)
-                          } // Gọi hàm xóa nhân viên
-                        >
-                          <FontAwesomeIcon
-                            icon={faTrashCan}
-                            className="text-white"
-                          />
-                        </button>
+                      <td className="py-4 px-6 border-b border-grey-light">
+                        <div className="flex gap-x-2">
+                          <button
+                            className="flex items-center justify-center w-9 h-8 rounded hover:bg-blue-500 hover:text-white border border-blue-500 text-blue-500"
+                            onClick={() =>
+                              handleEditEmployee(employee.employeeId)
+                            } // Gọi hàm chỉnh sửa
+                          >
+                            <FontAwesomeIcon icon={faPenToSquare} />
+                          </button>
+                          <button
+                            className="flex items-center justify-center w-9 h-8 rounded hover:bg-red-600 hover:text-white border border-red-600 text-red-600"
+                            onClick={() =>
+                              handleDeactivateEmployee(employee.employeeId)
+                            } // Gọi hàm xóa nhân viên
+                          >
+                            <FontAwesomeIcon icon={faTrashCan} />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -271,7 +267,7 @@ const AllEmployees: React.FC = () => {
         )}
       </BodyLayout>
       {showPopUp && (
-        <FormPopUp
+        <FormPopUpEmployee
           onClose={togglePopUp}
           onAddEmployee={handleAddEmployee}
           employee={editingEmployee} // Truyền dữ liệu nhân viên đang chỉnh sửa

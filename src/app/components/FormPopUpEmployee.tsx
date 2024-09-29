@@ -1,15 +1,16 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Employee } from '../models/employeeModel'
 import Image from 'next/image'
+import { Department } from '@/app/models/departmentModel'
+import { EmployeeRole } from '../models/employeeRoles'
 
-interface FormPopUpProps {
+interface FormPopUpEmployeeProps {
   onClose: () => void
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  onAddEmployee: (newEmployee: any) => void
+  onAddEmployee: () => void
   employee?: Employee | null
 }
 
-const FormPopUp: React.FC<FormPopUpProps> = ({
+const FormPopUpEmployee: React.FC<FormPopUpEmployeeProps> = ({
   onClose,
   onAddEmployee,
   employee,
@@ -19,14 +20,78 @@ const FormPopUp: React.FC<FormPopUpProps> = ({
     email: employee?.email || '',
     employeeId: employee?.employeeId || '',
     phone: employee?.phone || '',
-    joinDate: employee?.joinDate || '',
+    joinDate: employee?.joinDate || new Date().toISOString().split('T')[0], // Default to current date if no employee
     role: employee?.role || '',
+    department: employee?.department || '',
     avatar: employee?.avatar || '', // Avatar URL or file path
   })
+  const [departments, setDepartments] = useState<Department[]>([])
+  const [employeeRoles, setEmployeeRoles] = useState<EmployeeRole[]>([])
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Function to fetch department names
+  const fetchDepartments = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/departments/list')
+      if (response.ok) {
+        const data = await response.json()
+        setDepartments(data) // Assuming data is an array of department names
+      } else {
+        console.error('Failed to fetch departments.')
+      }
+    } catch (error) {
+      console.error('Error:', error)
+    }
+  }
+
+  // Function to fetch department names
+  const fetchEmployeeRoles = async (department: string) => {
+    try {
+      const response = await fetch(
+        `http://localhost:5000/api/employee-roles/by-department/${department}`
+      )
+      if (response.ok) {
+        const data = await response.json()
+        setEmployeeRoles(data) // Assuming data is an array of department names
+      } else {
+        console.error('Failed to fetch employee roles.')
+        console.log(department)
+      }
+    } catch (error) {
+      console.error('Error:', error)
+    }
+  }
+
+  // Fetch departments when the component mounts
+  useEffect(() => {
+    fetchDepartments()
+  }, [])
+
+  // Handle form changes
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target
-    setFormData({ ...formData, [name]: value })
+
+    // Handle department change
+    if (name === 'department') {
+      // Update department in form data
+      setFormData({ ...formData, [name]: value })
+
+      console.log(formData.department)
+      // Fetch employee roles based on new department
+      if (value) {
+        fetchEmployeeRoles(value)
+      }
+
+      // Clear the role field if the department changes
+      setFormData((prevData) => ({
+        ...prevData,
+        role: '', // Reset role whenever department changes
+      }))
+    } else {
+      // Update other fields
+      setFormData({ ...formData, [name]: value })
+    }
   }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -61,9 +126,8 @@ const FormPopUp: React.FC<FormPopUpProps> = ({
       })
 
       if (response.ok) {
-        const updatedEmployee = await response.json()
         onClose()
-        onAddEmployee(updatedEmployee)
+        onAddEmployee()
       } else {
         console.error('Failed to submit employee.')
       }
@@ -105,15 +169,28 @@ const FormPopUp: React.FC<FormPopUpProps> = ({
             </div>
           </div>
 
-          {/* Other input fields */}
           <div className="mb-4 flex justify-between gap-2">
-            <div className="w-1/2">
+            <div className="w-full">
               <label className="block text-gray-700">Email ID</label>
               <input
                 type="email"
                 name="email"
                 className="w-full px-3 py-2 border rounded outline-none"
                 value={formData.email}
+                onChange={handleChange}
+              />
+            </div>
+          </div>
+
+          {/* Other input fields */}
+          <div className="mb-4 flex justify-between gap-2">
+            <div className="w-1/2">
+              <label className="block text-gray-700">Join Date</label>
+              <input
+                type="date"
+                name="joinDate"
+                className="w-full px-3 py-2 border rounded outline-none"
+                value={formData.joinDate}
                 onChange={handleChange}
               />
             </div>
@@ -131,24 +208,40 @@ const FormPopUp: React.FC<FormPopUpProps> = ({
 
           <div className="mb-4 flex justify-between gap-2">
             <div className="w-1/2">
-              <label className="block text-gray-700">Join Date</label>
-              <input
-                type="date"
-                name="joinDate"
-                className="w-full px-3 py-2 border rounded outline-none"
-                value={formData.joinDate}
+              <label className="block text-gray-700">Department</label>
+              <select
+                id="department"
+                name="department"
+                required
+                value={formData.department}
                 onChange={handleChange}
-              />
+                className="w-full px-3 py-2 border rounded outline-none"
+              >
+                <option value="">Select Department</option>
+                {departments.map((department, index) => (
+                  <option key={index} value={department.departmentName}>
+                    {department.departmentName}
+                  </option>
+                ))}
+              </select>
             </div>
             <div className="w-1/2">
               <label className="block text-gray-700">Role</label>
-              <input
-                type="text"
+              <select
+                id="role"
                 name="role"
-                className="w-full px-3 py-2 border rounded outline-none"
+                required
                 value={formData.role}
                 onChange={handleChange}
-              />
+                className="w-full px-3 py-2 border rounded outline-none"
+              >
+                <option value="">Select Role</option>
+                {employeeRoles.map((employeeRole, index) => (
+                  <option key={index} value={employeeRole.roleName}>
+                    {employeeRole.roleName}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
 
@@ -177,37 +270,6 @@ const FormPopUp: React.FC<FormPopUpProps> = ({
               </small>
             )}
           </div>
-          {/* Social Media Links */}
-          {/* <div className="mb-4 grid grid-cols-2 gap-2 pt-2 border-t">
-            <div>
-              <label className="block text-gray-700">Facebook</label>
-              <input
-                type="text"
-                className="w-full px-3 py-2 border rounded outline-none"
-              />
-            </div>
-            <div>
-              <label className="block text-gray-700">Twitter</label>
-              <input
-                type="text"
-                className="w-full px-3 py-2 border rounded outline-none"
-              />
-            </div>
-            <div>
-              <label className="block text-gray-700">LinkedIn</label>
-              <input
-                type="text"
-                className="w-full px-3 py-2 border rounded outline-none"
-              />
-            </div>
-            <div>
-              <label className="block text-gray-700">Instagram</label>
-              <input
-                type="text"
-                className="w-full px-3 py-2 border rounded outline-none"
-              />
-            </div>
-          </div> */}
           <div className="flex justify-end gap-4">
             <button
               type="button"
@@ -229,4 +291,4 @@ const FormPopUp: React.FC<FormPopUpProps> = ({
   )
 }
 
-export default FormPopUp
+export default FormPopUpEmployee

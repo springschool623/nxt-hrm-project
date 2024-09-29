@@ -5,6 +5,7 @@ export interface Employee {
   phone: string
   joinDate: string
   role: string
+  department?: string
   avatar?: string // URL của ảnh đại diện
   socialLinks?: { platform: string; url: string }[] // Mảng các liên kết mạng xã hội
   manager?: string // Tham chiếu đến manager nếu có

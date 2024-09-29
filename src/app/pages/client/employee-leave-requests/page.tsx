@@ -1,5 +1,6 @@
 import Header from '@/app/components/Header'
 import BodyLayout from '@/app/layout/BodyLayout'
+import { LeaveType } from '@/app/models/leaveTypeModel'
 import React, { useState, useEffect } from 'react'
 
 const EmployeeLeaveRequests = () => {
@@ -14,6 +15,28 @@ const EmployeeLeaveRequests = () => {
     endDate: '',
     reason: '',
   })
+
+  const [leaveTypes, setLeaveTypes] = useState<LeaveType[]>([])
+
+  // Function to fetch department names
+  const fetchLeaveTypes = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/leave-types/list')
+      if (response.ok) {
+        const data = await response.json()
+        setLeaveTypes(data) // Assuming data is an array of department names
+      } else {
+        console.error('Failed to fetch leave types.')
+      }
+    } catch (error) {
+      console.error('Error:', error)
+    }
+  }
+
+  // Fetch departments when the component mounts
+  useEffect(() => {
+    fetchLeaveTypes()
+  }, [])
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -62,7 +85,6 @@ const EmployeeLeaveRequests = () => {
       alert('Failed to submit leave request. Please try again.')
     } finally {
       setIsSending(false)
-      alert('Leave request submitted successfully!')
     }
   }
 
@@ -81,7 +103,6 @@ const EmployeeLeaveRequests = () => {
   return (
     <div className="relative w-full flex flex-col h-screen overflow-y-hidden">
       <Header />
-
       <BodyLayout>
         <div className="flex flex-col items-center w-full h-full p-12 bg-white">
           <h1 className="text-3xl text-black pb-6">Employee Leave Requests</h1>
@@ -89,10 +110,13 @@ const EmployeeLeaveRequests = () => {
             onSubmit={handleSubmit}
             className="flex flex-col w-2/4 h-2/4 m-6 gap-3 rounded"
           >
-            <div className="flex gap-5">
-              <div className="flex flex-col w-1/2 gap-2">
-                <label htmlFor="employeeId">Employee ID:</label>
+            <div className="flex">
+              <div className="flex flex-col gap-2">
+                <label htmlFor="employeeId" hidden>
+                  Employee ID:
+                </label>
                 <input
+                  hidden
                   type="text"
                   id="employeeId"
                   name="employeeId"
@@ -102,7 +126,7 @@ const EmployeeLeaveRequests = () => {
                   onChange={handleChange}
                 />
               </div>
-              <div className="flex flex-col w-1/2 gap-2">
+              <div className="flex flex-col w-full gap-2">
                 <label htmlFor="leaveType">Leave Type:</label>
                 <select
                   id="leaveType"
@@ -113,17 +137,11 @@ const EmployeeLeaveRequests = () => {
                   className="px-4 py-2 outline-none bg-gray-50 border border-gray-300 rounded"
                 >
                   <option value="">Select Leave Type</option>
-                  <option value="Annual Leave">Annual Leave</option>
-                  <option value="Sick Leave">Sick Leave</option>
-                  <option value="Maternity Leave">Maternity Leave</option>
-                  <option value="Paternity Leave">Paternity Leave</option>
-                  <option value="Unpaid Leave">Unpaid Leave</option>
-                  <option value="Casual Leave">Casual Leave</option>
-                  <option value="Compensatory Leave">Compensatory Leave</option>
-                  <option value="Bereavement Leave">Bereavement Leave</option>
-                  <option value="Marriage Leave">Marriage Leave</option>
-                  <option value="Study Leave">Study Leave</option>
-                  <option value="Adoption Leave">Adoption Leave</option>
+                  {leaveTypes.map((leaveType, index) => (
+                    <option key={index} value={leaveType.leaveType}>
+                      {leaveType.leaveType}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>

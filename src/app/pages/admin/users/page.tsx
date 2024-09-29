@@ -1,24 +1,27 @@
 import React, { useState, useEffect } from 'react'
-import FormPopUp from '@/app/components/FormPopUp'
 import Header from '@/app/components/Header'
 import Pagination from '@/app/components/Pagination'
 import BodyLayout from '@/app/layout/BodyLayout'
-import { faPenToSquare, faTrashCan } from '@fortawesome/free-solid-svg-icons'
+import { faCircleUser, faLock } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { User } from '@/app/models/userModel'
 import Image from 'next/image'
+import FormPopUpChangePassword from '@/app/components/FormPopUpChangePassword'
+import FormPopUpSetRole from '@/app/components/FormPopUpSetRole'
 
 const Users: React.FC = () => {
   const [users, setUsers] = useState<User[]>([])
   const [currentPage, setCurrentPage] = useState<number>(1)
   const [itemsPerPage, setItemsPerPage] = useState<number>(10)
   const [searchTerm, setSearchTerm] = useState<string>('')
-  const [isDeleting, setIsDeleting] = useState<boolean>(false)
   const [editingUser, setEditingUser] = useState<User | null>(null)
   const [filteredUsers, setFilteredUsers] = useState<User[]>(users)
-  const [showPopUp, setShowPopUp] = useState<boolean>(false)
+  const [showPopUpChangePass, setShowPopUpChangePass] = useState<boolean>(false)
+  const [showPopUpSetRole, setShowPopUpSetRole] = useState<boolean>(false)
+
   const totalItems = filteredUsers.length
   const [currentUserRole, setCurrentUserRole] = useState<string | null>(null) // State cho user role hiện tại
+  const [currentRoleLevel, setCurrentRoleLevel] = useState<number | null>(null) // State cho user role hiện tại
 
   const fetchUsers = async () => {
     try {
@@ -33,7 +36,8 @@ const Users: React.FC = () => {
         userRole: user.userRoleType,
         createDate: new Date(user.createdAt).toLocaleDateString(),
         employeeRole: user.employeeInfo?.role || 'Unknown', // Lấy role từ employeeInfo
-        avatar: user.employeeInfo?.avatar || '/images/realmadrid.jpg', // Nếu không có avatar, dùng avatar mặc định
+        avatar: user.employeeInfo?.avatar, // Nếu không có avatar, dùng avatar mặc định
+        roleLevel: user.roleLevel,
       }))
       setUsers(transformedData)
       setFilteredUsers(transformedData)
@@ -41,16 +45,19 @@ const Users: React.FC = () => {
       console.error('Failed to fetch users:', error)
     }
   }
-
   useEffect(() => {
     // Lấy userRole từ localStorage khi component mount
     const userRoleFromStorage = localStorage.getItem('userRole')
     setCurrentUserRole(userRoleFromStorage)
-    console.log(userRoleFromStorage)
 
     // Fetch users
     fetchUsers()
   }, [])
+
+  // Hàm xử lý thêm nhân viên mới
+  const handleUpdateUsers = () => {
+    fetchUsers()
+  }
 
   useEffect(() => {
     const filtered = users.filter(
@@ -60,45 +67,25 @@ const Users: React.FC = () => {
         user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         user.userRole?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         user.employeeRole?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.createDate?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.avatar?.toLowerCase().includes(searchTerm.toLowerCase())
+        user.createDate?.toLowerCase().includes(searchTerm.toLowerCase())
     )
     setFilteredUsers(filtered)
   }, [searchTerm, users])
+
+  // Fetch userRoleLevel from localStorage and user roles on component mount
+  useEffect(() => {
+    const userRoleLevelFromStorage = localStorage.getItem('roleLevel')
+    setCurrentRoleLevel(
+      userRoleLevelFromStorage ? Number(userRoleLevelFromStorage) : null
+    )
+    console.log(userRoleLevelFromStorage)
+  }, [])
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page)
   }
 
-  const handleDeleteEmployee = async (employeeId: string) => {
-    setIsDeleting(true) // Bắt đầu quá trình xóa, hiển thị loading
-    try {
-      // Delay 5 giây trước khi thực hiện xóa
-      await new Promise((resolve) => setTimeout(resolve, 2000))
-
-      const response = await fetch(
-        `http://localhost:5000/api/users/delete/${employeeId}`,
-        {
-          method: 'DELETE',
-        }
-      )
-      if (response.ok) {
-        // Xóa nhân viên thành công, cập nhật lại danh sách nhân viên
-        const updatedUsers = users.filter(
-          (user) => user.employeeId !== employeeId
-        )
-        setUsers(updatedUsers)
-        setFilteredUsers(updatedUsers)
-      }
-    } catch (error) {
-      console.error('Failed to delete user:', error)
-      alert('An error occurred while deleting the user')
-    } finally {
-      setIsDeleting(false) // Kết thúc quá trình xóa, tắt loading
-    }
-  }
-
-  const handleEditUser = async (employeeId: string) => {
+  const handleChangePassword = async (employeeId: string) => {
     try {
       const response = await fetch(
         `http://localhost:5000/api/users/${employeeId}`
@@ -106,7 +93,22 @@ const Users: React.FC = () => {
       if (response.ok) {
         const userData = await response.json()
         setEditingUser(userData) // Lưu thông tin nhân viên vào state
-        setShowPopUp(true) // Hiển thị popup chỉnh sửa
+        setShowPopUpChangePass(true) // Hiển thị popup chỉnh sửa
+      }
+    } catch (error) {
+      console.error('Failed to fetch user details:', error)
+    }
+  }
+
+  const handleSetRole = async (employeeId: string) => {
+    try {
+      const response = await fetch(
+        `http://localhost:5000/api/users/${employeeId}`
+      )
+      if (response.ok) {
+        const userData = await response.json()
+        setEditingUser(userData) // Lưu thông tin nhân viên vào state
+        setShowPopUpSetRole(true) // Hiển thị popup chỉnh sửa
       }
     } catch (error) {
       console.error('Failed to fetch user details:', error)
@@ -122,17 +124,15 @@ const Users: React.FC = () => {
   const indexOfFirstUser = indexOfLastUser - itemsPerPage
   const currentUsers = filteredUsers.slice(indexOfFirstUser, indexOfLastUser)
 
-  const togglePopUp = () => {
-    setShowPopUp(!showPopUp)
+  const togglePopUpChangePass = () => {
+    setShowPopUpChangePass(!showPopUpChangePass)
+  }
+  const togglePopUpSetRole = () => {
+    setShowPopUpSetRole(!showPopUpSetRole)
   }
 
-  // Hàm xử lý thêm nhân viên mới
-  const handleAddEmployee = () => {
-    fetchUsers()
-  }
   const canPerformAction =
     currentUserRole === 'Super Admin' || currentUserRole === 'Admin'
-
   return (
     <div className="relative w-full flex flex-col h-screen overflow-y-hidden">
       <Header />
@@ -189,7 +189,7 @@ const Users: React.FC = () => {
                     <tr key={index} className="hover:bg-grey-lighter">
                       <td className="py-4 px-6 border-b border-grey-light">
                         <Image
-                          src={user.avatar}
+                          src={user.avatar || '/images/realmadrid.jpg'}
                           alt="Avatar"
                           width={400}
                           height={400}
@@ -203,7 +203,19 @@ const Users: React.FC = () => {
                         {user.email}
                       </td>
                       <td className="py-4 px-6 border-b border-grey-light">
-                        {user.userRole}
+                        <div
+                          className={`w-fit px-2 py-1 rounded-md uppercase text-sm	${
+                            user.userRole === 'Super Admin'
+                              ? 'text-super-admin'
+                              : user.userRole === 'Admin'
+                              ? 'text-admin'
+                              : user.userRole === 'HR'
+                              ? 'text-hr'
+                              : 'text-employee'
+                          }`}
+                        >
+                          {user.userRole}
+                        </div>
                       </td>
                       <td className="py-4 px-6 border-b border-grey-light">
                         {user.createDate}
@@ -212,27 +224,29 @@ const Users: React.FC = () => {
                         {user.employeeRole}
                       </td>
                       {canPerformAction && (
-                        <td className="flex gap-x-2 py-4 px-6 border-b border-grey-light">
-                          <button
-                            className="w-9 h-8 rounded bg-blue-500"
-                            onClick={() => handleEditUser(user.employeeId)}
-                          >
-                            <FontAwesomeIcon
-                              icon={faPenToSquare}
-                              className="text-white"
-                            />
-                          </button>
-                          <button
-                            className="w-9 h-8 rounded bg-red-600"
-                            onClick={() =>
-                              handleDeleteEmployee(user.employeeId)
-                            }
-                          >
-                            <FontAwesomeIcon
-                              icon={faTrashCan}
-                              className="text-white"
-                            />
-                          </button>
+                        <td className="py-4 px-6 border-b border-grey-light">
+                          {(currentRoleLevel !== null &&
+                            user.roleLevel !== null &&
+                            currentRoleLevel >= user.roleLevel) ||
+                          user.roleLevel == 0 ? null : ( // Không hiển thị button nếu currentRoleLevel >= user.roleLevel
+                            // Hiển thị button nếu currentRoleLevel < user.roleLevel
+                            <div className="flex gap-x-2">
+                              <button
+                                className="flex items-center justify-center w-9 h-8 rounded hover:bg-blue-500 hover:text-white border border-blue-500 text-blue-500"
+                                onClick={() =>
+                                  handleChangePassword(user.employeeId)
+                                }
+                              >
+                                <FontAwesomeIcon icon={faLock} />
+                              </button>
+                              <button
+                                className="flex items-center justify-center w-9 h-8 rounded hover:bg-black hover:text-white border border-black text-black"
+                                onClick={() => handleSetRole(user.employeeId)}
+                              >
+                                <FontAwesomeIcon icon={faCircleUser} />
+                              </button>
+                            </div>
+                          )}
                         </td>
                       )}
                     </tr>
@@ -255,20 +269,18 @@ const Users: React.FC = () => {
             onItemsPerPageChange={handleItemsPerPageChange}
           />
         )}
-        {/* Nội dung hiện tại của bạn */}
-        {isDeleting && (
-          <div className="loading-wrapper">
-            <div className="loading-overlay">
-              <div className="loading-spinner"></div>
-            </div>
-          </div>
-        )}
       </BodyLayout>
-      {showPopUp && (
-        <FormPopUp
-          onClose={togglePopUp}
-          onAddEmployee={handleAddEmployee}
-          employee={editingUser} // Truyền dữ liệu nhân viên đang chỉnh sửa
+      {showPopUpSetRole && (
+        <FormPopUpSetRole
+          onUpdateUser={handleUpdateUsers}
+          onClose={togglePopUpSetRole}
+          user={editingUser} // Truyền dữ liệu nhân viên đang chỉnh sửa
+        />
+      )}
+      {showPopUpChangePass && (
+        <FormPopUpChangePassword
+          onClose={togglePopUpChangePass}
+          user={editingUser} // Truyền dữ liệu nhân viên đang chỉnh sửa
         />
       )}
     </div>

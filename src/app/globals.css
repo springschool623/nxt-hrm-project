@@ -111,3 +111,23 @@
   align-items: center;
   z-index: 1000; /* Đảm bảo hiện trên mọi thứ */
 }
+
+.text-super-admin {
+  background-color: #f44336; /* Màu đỏ cho Super Admin */
+  color: white;
+}
+
+.text-admin {
+  background-color: #2196f3; /* Màu xanh dương cho Admin */
+  color: white;
+}
+
+.text-hr {
+  background-color: #4caf50; /* Màu xanh lá cho User */
+  color: white;
+}
+
+.text-employee {
+  background-color: #ffeb3b; /* Màu vàng cho Guest */
+  color: black;
+}

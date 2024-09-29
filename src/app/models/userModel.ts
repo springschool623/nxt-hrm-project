@@ -7,4 +7,7 @@ export interface User {
   createDate: string
   employeeRole: string
   status?: string
+  password: string
+  modifiedDate: string
+  roleLevel: number
 }

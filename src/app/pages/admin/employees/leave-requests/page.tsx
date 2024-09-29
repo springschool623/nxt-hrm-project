@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react'
-import FormPopUp from '@/app/components/FormPopUp'
 import Header from '@/app/components/Header'
 import Pagination from '@/app/components/Pagination'
 import BodyLayout from '@/app/layout/BodyLayout'
@@ -14,11 +13,8 @@ const LeaveRequests: React.FC = () => {
   const [itemsPerPage, setItemsPerPage] = useState<number>(10)
   const [searchTerm, setSearchTerm] = useState<string>('')
   const [isDeleting, setIsDeleting] = useState<boolean>(false)
-  const [editingLeaveRequest, setEditingLeaveRequest] =
-    useState<LeaveRequest | null>(null)
   const [filteredLeaveRequests, setFilteredLeaveRequests] =
     useState<LeaveRequest[]>(leaveRequests)
-  const [showPopUp, setShowPopUp] = useState<boolean>(false)
   const totalItems = filteredLeaveRequests.length
   const [currentUserRole, setCurrentUserRole] = useState<string | null>(null) // State cho user role hiện tại
 
@@ -167,14 +163,6 @@ const LeaveRequests: React.FC = () => {
     indexOfLastLeaveRequest
   )
 
-  const togglePopUp = () => {
-    setShowPopUp(!showPopUp)
-  }
-
-  // Hàm xử lý thêm nhân viên mới
-  const handleAddEmployee = () => {
-    fetchLeaveRequests()
-  }
   const canPerformAction =
     currentUserRole === 'Super Admin' || currentUserRole === 'Admin'
 
@@ -258,26 +246,25 @@ const LeaveRequests: React.FC = () => {
                         {leaveRequest.reason}
                       </td>
                       {canPerformAction && (
-                        <td className="flex gap-x-2 py-4 px-6 border-b border-grey-light">
-                          <button
-                            className="flex items-center justify-center w-8 h-8 rounded-full bg-green-500"
-                            onClick={() =>
-                              handleApprovedRequest(leaveRequest.requestId)
-                            }
-                          >
-                            <FontAwesomeIcon
-                              icon={faCheck}
-                              className="text-white"
-                            />
-                          </button>
-                          <button
-                            className="flex items-center justify-center w-8 h-8 rounded-full border border-red-600 text-red-600 hover:bg-red-600 hover:text-white"
-                            onClick={() =>
-                              handleRejectedRequest(leaveRequest.requestId)
-                            }
-                          >
-                            <FontAwesomeIcon icon={faXmark} />
-                          </button>
+                        <td className="py-4 px-6 border-b border-grey-light">
+                          <div className="flex gap-x-2">
+                            <button
+                              className="flex items-center justify-center w-8 h-8 rounded-full border border-green-600 text-green-600 hover:bg-green-600 hover:text-white"
+                              onClick={() =>
+                                handleApprovedRequest(leaveRequest.requestId)
+                              }
+                            >
+                              <FontAwesomeIcon icon={faCheck} />
+                            </button>
+                            <button
+                              className="flex items-center justify-center w-8 h-8 rounded-full border border-red-600 text-red-600 hover:bg-red-600 hover:text-white"
+                              onClick={() =>
+                                handleRejectedRequest(leaveRequest.requestId)
+                              }
+                            >
+                              <FontAwesomeIcon icon={faXmark} />
+                            </button>
+                          </div>
                         </td>
                       )}
                     </tr>
@@ -309,13 +296,6 @@ const LeaveRequests: React.FC = () => {
           </div>
         )}
       </BodyLayout>
-      {showPopUp && (
-        <FormPopUp
-          onClose={togglePopUp}
-          onAddEmployee={handleAddEmployee}
-          employee={editingLeaveRequest} // Truyền dữ liệu nhân viên đang chỉnh sửa
-        />
-      )}
     </div>
   )
 }

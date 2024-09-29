@@ -26,13 +26,15 @@ const Home = () => {
   const [activeTab, setActiveTab] = useState('home')
   const router = useRouter()
   const [loading, setLoading] = useState(true) // Loading state
-  const [currentUserRole, setCurrentUserRole] = useState<string | null>(null) // State cho user role hiện tại
+  const [isLoading, setIsLoading] = useState<boolean>(false)
+  const [currentRoleLevel, setCurrentRoleLevel] = useState<number | null>(null) // State cho user role hiện tại
 
   // Simulate loading for 3 seconds
   useEffect(() => {
-    // Lấy userRole từ localStorage khi component mount
-    const userRoleFromStorage = localStorage.getItem('userRole')
-    setCurrentUserRole(userRoleFromStorage)
+    const userRoleLevelFromStorage = localStorage.getItem('roleLevel')
+    setCurrentRoleLevel(
+      userRoleLevelFromStorage ? Number(userRoleLevelFromStorage) : null
+    )
     // Show loading screen for 3 seconds
     const timer = setTimeout(() => {
       setLoading(false)
@@ -64,11 +66,21 @@ const Home = () => {
     }
   }
 
+  // Hàm xử lý logout
+  const handleLogout = () => {
+    document.cookie = 'token=; path=/; max-age=0' // Xóa cookie token
+    setIsLoading(true)
+    setTimeout(() => {
+      // Xóa token khỏi cookie
+      setIsLoading(false)
+      router.push('/auth/login')
+    }, 2000) // Đặt thời gian chờ 2 giây (2000ms)
+    // Điều hướng về trang login
+  }
+
   const toggleEmployeesMenu = () => {
     setIsEmployeesOpen(!isEmployeesOpen)
   }
-
-  const canPerformAction = currentUserRole !== 'Employee'
 
   if (loading) {
     return (
@@ -111,16 +123,19 @@ const Home = () => {
                     Support
                   </a>
                   <hr />
-                  <a href="#" className="block text-black my-2">
+                  <div
+                    onClick={handleLogout} // Gọi hàm handleLogout khi nhấn vào nút
+                    className="block text-black my-2"
+                  >
                     Sign Out
-                  </a>
+                  </div>
                 </div>
               </span>
             </div>
           </div>
         </div>
         <nav className="text-white text-base font-semibold pt-3">
-          {canPerformAction && (
+          {currentRoleLevel !== null && currentRoleLevel <= 1 && (
             <>
               <div
                 onClick={() => setActiveTab('dashboard')}
@@ -138,7 +153,7 @@ const Home = () => {
             <FontAwesomeIcon icon={faStickyNote} className="w-6 h-6 mr-3" />
             Activities
           </div>
-          {!canPerformAction && (
+          {currentRoleLevel !== null && currentRoleLevel > 1 && (
             <>
               <div
                 onClick={() => setActiveTab('employee-leave-requests')}
@@ -149,7 +164,7 @@ const Home = () => {
               </div>
             </>
           )}
-          {canPerformAction && (
+          {currentRoleLevel !== null && currentRoleLevel <= 1 && (
             <>
               <div>
                 <div
@@ -232,6 +247,14 @@ const Home = () => {
         </nav>
       </aside>
       {renderContent()}
+      {/* Nội dung hiện tại của bạn */}
+      {isLoading && (
+        <div className="loading-wrapper">
+          <div className="loading-overlay">
+            <div className="loading-spinner"></div>
+          </div>
+        </div>
+      )}
     </>
   )
 }
