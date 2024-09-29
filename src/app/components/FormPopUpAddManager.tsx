@@ -1,31 +1,33 @@
 import React, { useEffect, useState } from 'react'
-import { User } from '../models/userModel'
-import { UserRole } from '../models/userRole'
+import { Employee } from '../models/employeeModel'
+import { Department } from '../models/departmentModel'
 
-interface FormPopUpSetRoleProps {
+interface FormPopUpAddManagerProps {
   onClose: () => void
-  onUpdateUser: () => void
-  user?: User | null
+  onAddManager: () => void
+  department?: Department | null
 }
 
-const FormPopUpSetRole: React.FC<FormPopUpSetRoleProps> = ({
+const FormPopUpAddManager: React.FC<FormPopUpAddManagerProps> = ({
   onClose,
-  onUpdateUser,
-  user,
+  onAddManager,
+  department,
 }) => {
   const [formData, setFormData] = useState({
-    employeeId: user?.employeeId,
-    userRole: user?.userRole || '',
+    departmentName: department?.departmentName,
+    manager: department?.manager || '',
   })
-  const [userRoles, setUserRoles] = useState<UserRole[]>([])
+  const [employees, setEmployees] = useState<Employee[]>([])
 
   // Function to fetch department names
-  const fetchUserRoles = async () => {
+  const fetchEmployees = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/user-roles/list')
+      const response = await fetch(
+        `http://localhost:5000/api/employees/employees-by-department/${formData.departmentName}`
+      )
       if (response.ok) {
         const data = await response.json()
-        setUserRoles(data) // Assuming data is an array of department names
+        setEmployees(data) // Assuming data is an array of department names
       } else {
         console.error('Failed to fetch user roles.')
       }
@@ -36,7 +38,8 @@ const FormPopUpSetRole: React.FC<FormPopUpSetRoleProps> = ({
 
   // Fetch departments when the component mounts
   useEffect(() => {
-    fetchUserRoles()
+    fetchEmployees()
+    console.log(formData.departmentName)
   }, [])
 
   const handleChange = (
@@ -50,12 +53,12 @@ const FormPopUpSetRole: React.FC<FormPopUpSetRoleProps> = ({
     e.preventDefault()
 
     try {
-      const url = `http://localhost:5000/api/users/set-role`
+      const url = `http://localhost:5000/api/departments/set-manager`
 
       // Update the recentPassword to the newPassword
       const updatedFormData = {
-        employeeId: formData.employeeId,
-        userRoleType: formData.userRole,
+        departmentName: formData.departmentName,
+        manager: formData.manager,
       }
 
       const response = await fetch(url, {
@@ -68,7 +71,7 @@ const FormPopUpSetRole: React.FC<FormPopUpSetRoleProps> = ({
 
       if (response.ok) {
         onClose()
-        onUpdateUser()
+        onAddManager()
       } else {
         console.error('Failed to update employee password.')
       }
@@ -81,7 +84,7 @@ const FormPopUpSetRole: React.FC<FormPopUpSetRoleProps> = ({
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-[5px]">
       <div className="w-1/3 bg-white p-6 rounded-lg shadow-lg">
         <h2 className="text-center text-xl pb-2 mb-4 border-b border-border">
-          Set Role
+          Set Manager
         </h2>
         <form
           className="px-2 overflow-auto max-h-[60vh] cus-scrollbar"
@@ -91,27 +94,27 @@ const FormPopUpSetRole: React.FC<FormPopUpSetRoleProps> = ({
             <div className="w-1/2">
               <label className="block text-gray-700">Employee ID</label>
               <input
-                type="employeeId"
-                name="employeeId"
+                type="departmentName"
+                name="departmentName"
                 className="w-full px-3 py-2 border rounded outline-none"
-                value={formData.employeeId}
+                value={formData.departmentName}
                 disabled // Disable editing of email
               />
             </div>
             <div className="w-1/2">
               <label className="block text-gray-700">User Role</label>
               <select
-                id="userRole"
-                name="userRole"
+                id="manager"
+                name="manager"
                 required
-                value={formData.userRole}
+                value={formData.manager}
                 onChange={handleChange}
                 className="w-full px-3 py-2 border rounded outline-none"
               >
                 <option value="">Select Role</option>
-                {userRoles.map((userRole, index) => (
-                  <option key={index} value={userRole.userRoleType}>
-                    {userRole.userRoleType}
+                {employees.map((employee, index) => (
+                  <option key={index} value={employee.employeeId}>
+                    {employee.employeeId}
                   </option>
                 ))}
               </select>
@@ -139,4 +142,4 @@ const FormPopUpSetRole: React.FC<FormPopUpSetRoleProps> = ({
   )
 }
 
-export default FormPopUpSetRole
+export default FormPopUpAddManager

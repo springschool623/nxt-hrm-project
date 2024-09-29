@@ -4,10 +4,14 @@ import Pagination from '@/app/components/Pagination'
 import BodyLayout from '@/app/layout/BodyLayout'
 import { faPenToSquare, faTrashCan } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { Department } from '@/app/models/departmentModel'
+import FormPopUpAddManager from '@/app/components/FormPopUpAddManager'
 import { Employee } from '@/app/models/employeeModel'
 import FormPopUpEmployee from '@/app/components/FormPopUpEmployee'
+import Image from 'next/image'
+import FormPopUpSetSalary from '@/app/components/FormPopUpSetSalary'
 
-const AllEmployees: React.FC = () => {
+const EmployeeSalary: React.FC = () => {
   const [employees, setEmployees] = useState<Employee[]>([])
   const [currentPage, setCurrentPage] = useState<number>(1)
   const [itemsPerPage, setItemsPerPage] = useState<number>(10)
@@ -27,12 +31,14 @@ const AllEmployees: React.FC = () => {
       const data = await response.json()
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const transformedData = data.map((employee: any) => ({
+        avatar: employee?.avatar,
         name: employee.name,
         email: employee.email,
         employeeId: employee.employeeId,
         phone: employee.phone,
         joinDate: new Date(employee.joinDate).toLocaleDateString(),
         role: employee.role,
+        salary: employee.salary || 0,
       }))
       setEmployees(transformedData)
       setFilteredEmployees(transformedData)
@@ -96,21 +102,6 @@ const AllEmployees: React.FC = () => {
     }
   }
 
-  const handleEditEmployee = async (employeeId: string) => {
-    try {
-      const response = await fetch(
-        `http://localhost:5000/api/employees/${employeeId}`
-      )
-      if (response.ok) {
-        const employeeData = await response.json()
-        setEditingEmployee(employeeData) // Lưu thông tin nhân viên vào state
-        setShowPopUp(true) // Hiển thị popup chỉnh sửa
-      }
-    } catch (error) {
-      console.error('Failed to fetch employee details:', error)
-    }
-  }
-
   const handleItemsPerPageChange = (newItemsPerPage: number) => {
     setItemsPerPage(newItemsPerPage)
     setCurrentPage(1)
@@ -128,7 +119,7 @@ const AllEmployees: React.FC = () => {
   }
 
   // Hàm xử lý thêm nhân viên mới
-  const handleAddEmployee = () => {
+  const handleSetSalary = () => {
     fetchEmployees()
   }
 
@@ -136,7 +127,7 @@ const AllEmployees: React.FC = () => {
     <div className="relative w-full flex flex-col h-screen overflow-y-hidden">
       <Header />
       <BodyLayout>
-        <h1 className="text-3xl text-black pb-6">All Employees</h1>
+        <h1 className="text-3xl text-black pb-6">Employee Salary</h1>
         <div className="w-full">
           <div className="flex justify-end gap-2">
             <button
@@ -144,7 +135,7 @@ const AllEmployees: React.FC = () => {
               className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-transparent hover:text-blue-600 border border-blue-600"
               disabled={isDeleting} // Disable nút khi đang xóa
             >
-              Add New
+              Set Employee Salary
             </button>
           </div>
           <div className="flex justify-end mt-8 gap-2">
@@ -168,7 +159,7 @@ const AllEmployees: React.FC = () => {
                 <thead>
                   <tr>
                     <th className="py-4 px-6 bg-grey-lightest font-bold uppercase text-sm text-grey-dark border-b-2 border-grey-light">
-                      <input type="checkbox" />
+                      Avatar
                     </th>
                     <th className="py-4 px-6 bg-grey-lightest font-bold uppercase text-sm text-grey-dark border-b-2 border-grey-light">
                       Name
@@ -189,6 +180,9 @@ const AllEmployees: React.FC = () => {
                       Role
                     </th>
                     <th className="py-4 px-6 bg-grey-lightest font-bold uppercase text-sm text-grey-dark border-b-2 border-grey-light">
+                      Salary
+                    </th>
+                    <th className="py-4 px-6 bg-grey-lightest font-bold uppercase text-sm text-grey-dark border-b-2 border-grey-light">
                       Action
                     </th>
                   </tr>
@@ -197,7 +191,13 @@ const AllEmployees: React.FC = () => {
                   {currentEmployees.map((employee, index) => (
                     <tr key={index} className="hover:bg-grey-lighter">
                       <td className="py-4 px-6 border-b border-grey-light">
-                        <input type="checkbox" />
+                        <Image
+                          src={employee.avatar || '/images/realmadrid.jpg'}
+                          alt="Avatar"
+                          width={400}
+                          height={400}
+                          className="w-12 h-12 rounded-lg"
+                        />{' '}
                       </td>
                       <td className="py-4 px-6 border-b border-grey-light">
                         {employee.name}
@@ -218,15 +218,10 @@ const AllEmployees: React.FC = () => {
                         {employee.role}
                       </td>
                       <td className="py-4 px-6 border-b border-grey-light">
+                        {employee.salary}
+                      </td>
+                      <td className="py-4 px-6 border-b border-grey-light">
                         <div className="flex gap-x-2">
-                          <button
-                            className="flex items-center justify-center w-9 h-8 rounded hover:bg-blue-500 hover:text-white border border-blue-500 text-blue-500"
-                            onClick={() =>
-                              handleEditEmployee(employee.employeeId)
-                            } // Gọi hàm chỉnh sửa
-                          >
-                            <FontAwesomeIcon icon={faPenToSquare} />
-                          </button>
                           <button
                             className="flex items-center justify-center w-9 h-8 rounded hover:bg-red-600 hover:text-white border border-red-600 text-red-600"
                             onClick={() =>
@@ -267,14 +262,14 @@ const AllEmployees: React.FC = () => {
         )}
       </BodyLayout>
       {showPopUp && (
-        <FormPopUpEmployee
+        <FormPopUpSetSalary
           onClose={togglePopUp}
-          onAddEmployee={handleAddEmployee}
-          employee={editingEmployee} // Truyền dữ liệu nhân viên đang chỉnh sửa
+          onSetSalary={handleSetSalary}
+          employee={editingEmployee}
         />
       )}
     </div>
   )
 }
 
-export default AllEmployees
+export default EmployeeSalary

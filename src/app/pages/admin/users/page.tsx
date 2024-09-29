@@ -228,8 +228,7 @@ const Users: React.FC = () => {
                           {(currentRoleLevel !== null &&
                             user.roleLevel !== null &&
                             currentRoleLevel >= user.roleLevel) ||
-                          user.roleLevel == 0 ? null : ( // Không hiển thị button nếu currentRoleLevel >= user.roleLevel
-                            // Hiển thị button nếu currentRoleLevel < user.roleLevel
+                          user.roleLevel == 0 ? null : (
                             <div className="flex gap-x-2">
                               <button
                                 className="flex items-center justify-center w-9 h-8 rounded hover:bg-blue-500 hover:text-white border border-blue-500 text-blue-500"

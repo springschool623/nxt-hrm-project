@@ -3,6 +3,7 @@ import {
   faAngleLeft,
   faCaretDown,
   faHome,
+  faLock,
   faMinus,
   faStickyNote,
   faUser,
@@ -20,9 +21,12 @@ import Departments from './pages/admin/employees/departments/page'
 import LeaveRequests from './pages/admin/employees/leave-requests/page'
 import Users from './pages/admin/users/page'
 import EmployeeLeaveRequests from './pages/client/employee-leave-requests/page'
+import EmployeeSalary from './pages/admin/payroll/employee-salary/page'
+import EmployeeChangePassword from './pages/client/employee-change-password/page'
 
 const Home = () => {
   const [isEmployeesOpen, setIsEmployeesOpen] = useState(false)
+  const [isPayrollOpen, setIsPayrollOpen] = useState(false)
   const [activeTab, setActiveTab] = useState('home')
   const router = useRouter()
   const [loading, setLoading] = useState(true) // Loading state
@@ -57,10 +61,14 @@ const Home = () => {
         return <Departments />
       case 'leave-requests':
         return <LeaveRequests />
+      case 'employee-salary':
+        return <EmployeeSalary />
       case 'users':
         return <Users />
       case 'employee-leave-requests':
         return <EmployeeLeaveRequests />
+      case 'employee-change-password':
+        return <EmployeeChangePassword />
       default:
         return null
     }
@@ -80,6 +88,10 @@ const Home = () => {
 
   const toggleEmployeesMenu = () => {
     setIsEmployeesOpen(!isEmployeesOpen)
+  }
+
+  const togglePayrollMenu = () => {
+    setIsPayrollOpen(!isPayrollOpen)
   }
 
   if (loading) {
@@ -135,7 +147,7 @@ const Home = () => {
           </div>
         </div>
         <nav className="text-white text-base font-semibold pt-3">
-          {currentRoleLevel !== null && currentRoleLevel <= 1 && (
+          {currentRoleLevel !== null && currentRoleLevel <= 2 && (
             <>
               <div
                 onClick={() => setActiveTab('dashboard')}
@@ -146,15 +158,22 @@ const Home = () => {
               </div>
             </>
           )}
-          <div
+          {/* <div
             onClick={() => setActiveTab('activities')}
             className="flex items-center text-white py-4 pl-6 nav-item cursor-pointer"
           >
             <FontAwesomeIcon icon={faStickyNote} className="w-6 h-6 mr-3" />
             Activities
-          </div>
-          {currentRoleLevel !== null && currentRoleLevel > 1 && (
+          </div> */}
+          {currentRoleLevel !== null && currentRoleLevel > 2 && (
             <>
+              <div
+                onClick={() => setActiveTab('employee-change-password')}
+                className="flex items-center text-white py-4 pl-6 nav-item cursor-pointer"
+              >
+                <FontAwesomeIcon icon={faLock} className="w-6 h-6 mr-3" />
+                Change Password
+              </div>
               <div
                 onClick={() => setActiveTab('employee-leave-requests')}
                 className="flex items-center text-white py-4 pl-6 nav-item cursor-pointer"
@@ -164,7 +183,7 @@ const Home = () => {
               </div>
             </>
           )}
-          {currentRoleLevel !== null && currentRoleLevel <= 1 && (
+          {currentRoleLevel !== null && currentRoleLevel <= 2 && (
             <>
               <div>
                 <div
@@ -196,40 +215,89 @@ const Home = () => {
                         All Employees
                       </div>
                     </li>
+                    {currentRoleLevel !== null && currentRoleLevel < 2 && (
+                      <>
+                        <li>
+                          <div
+                            onClick={() => setActiveTab('leave-requests')}
+                            className="flex items-center opacity-80 hover:opacity-100 text-white py-4 pl-6 nav-item text-sm cursor-pointer"
+                          >
+                            <FontAwesomeIcon
+                              icon={faMinus}
+                              className="w-2 h-2 mr-7"
+                            />
+                            Leave Requests
+                          </div>
+                        </li>
+                        <li>
+                          <div
+                            onClick={() => setActiveTab('attendances')}
+                            className="flex items-center opacity-80 hover:opacity-100 text-white py-4 pl-6 nav-item text-sm cursor-pointer"
+                          >
+                            <FontAwesomeIcon
+                              icon={faMinus}
+                              className="w-2 h-2 mr-7"
+                            />
+                            Attendances
+                          </div>
+                        </li>
+                        <li>
+                          <div
+                            onClick={() => setActiveTab('departments')}
+                            className="flex items-center opacity-80 hover:opacity-100 text-white py-4 pl-6 nav-item text-sm cursor-pointer"
+                          >
+                            <FontAwesomeIcon
+                              icon={faMinus}
+                              className="w-2 h-2 mr-7"
+                            />
+                            Departments
+                          </div>
+                        </li>
+                      </>
+                    )}
+                  </ul>
+                )}
+              </div>
+              <div>
+                <div
+                  onClick={togglePayrollMenu}
+                  className="flex items-center justify-between text-white py-4 pl-6 nav-item cursor-pointer"
+                >
+                  <div className="flex">
+                    <FontAwesomeIcon icon={faUsers} className="w-6 h-6 mr-3" />
+                    Payroll
+                  </div>
+                  <FontAwesomeIcon
+                    icon={faAngleLeft}
+                    className={`w-4 h-4 mr-4 transition-transform duration-300 ${
+                      isPayrollOpen ? '-rotate-90' : ''
+                    }`}
+                  />
+                </div>
+                {isPayrollOpen && (
+                  <ul>
                     <li>
                       <div
-                        onClick={() => setActiveTab('leave-requests')}
+                        onClick={() => setActiveTab('employee-salary')}
                         className="flex items-center opacity-80 hover:opacity-100 text-white py-4 pl-6 nav-item text-sm cursor-pointer"
                       >
                         <FontAwesomeIcon
                           icon={faMinus}
                           className="w-2 h-2 mr-7"
                         />
-                        Leave Requests
+                        Payslip
                       </div>
                     </li>
                     <li>
                       <div
-                        onClick={() => setActiveTab('attendances')}
+                        onClick={() => setActiveTab('employee-salary')}
                         className="flex items-center opacity-80 hover:opacity-100 text-white py-4 pl-6 nav-item text-sm cursor-pointer"
                       >
                         <FontAwesomeIcon
                           icon={faMinus}
                           className="w-2 h-2 mr-7"
                         />
-                        Attendances
-                      </div>
-                    </li>
-                    <li>
-                      <div
-                        onClick={() => setActiveTab('departments')}
-                        className="flex items-center opacity-80 hover:opacity-100 text-white py-4 pl-6 nav-item text-sm cursor-pointer"
-                      >
-                        <FontAwesomeIcon
-                          icon={faMinus}
-                          className="w-2 h-2 mr-7"
-                        />
-                        Departments
+                        Employee Salary
                       </div>
                     </li>
                   </ul>

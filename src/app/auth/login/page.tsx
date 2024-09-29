@@ -33,12 +33,14 @@ const Login = () => {
         document.cookie = `token=${data.token}; path=/; max-age=3600` // max-age=3600 là 1 giờ
         localStorage.setItem('userRole', data.userRoleType) // Lưu userRole vào localStorage
         localStorage.setItem('employeeId', data.employeeId) // Lưu userRole vào localStorage
+        localStorage.setItem('email', data.email) // Lưu userRole vào localStorage
+        localStorage.setItem('password', data.password) // Lưu userRole vào localStorage
         localStorage.setItem('roleLevel', data.roleLevel) // Lưu userRole vào localStorage
 
         // Sử dụng router để chuyển hướng người dùng đến trang chính
         router.push('/') // Điều hướng đến trang chủ
         console.log('Login thành công')
-        console.log(data.roleLevel)
+        console.log(data.password)
       } else {
         // Hiển thị lỗi nếu đăng nhập không thành công
         setError(data.message || 'Login failed')

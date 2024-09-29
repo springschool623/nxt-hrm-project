@@ -1,43 +1,56 @@
 import React, { useEffect, useState } from 'react'
-import { User } from '../models/userModel'
-import { UserRole } from '../models/userRole'
+import { Employee } from '../models/employeeModel'
 
-interface FormPopUpSetRoleProps {
+interface FormPopUpSetSalaryProps {
   onClose: () => void
-  onUpdateUser: () => void
-  user?: User | null
+  onSetSalary: () => void
+  employee?: Employee | null
 }
 
-const FormPopUpSetRole: React.FC<FormPopUpSetRoleProps> = ({
+const FormPopUpSetSalary: React.FC<FormPopUpSetSalaryProps> = ({
   onClose,
-  onUpdateUser,
-  user,
+  onSetSalary,
+  employee,
 }) => {
   const [formData, setFormData] = useState({
-    employeeId: user?.employeeId,
-    userRole: user?.userRole || '',
+    employeeId: employee?.employeeId || '',
+    salary: employee?.salary || 0,
   })
-  const [userRoles, setUserRoles] = useState<UserRole[]>([])
+  const [employees, setEmployees] = useState<Employee[]>([])
 
-  // Function to fetch department names
-  const fetchUserRoles = async () => {
+  // Fetch the list of employees
+  const fetchEmployees = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/user-roles/list')
+      const response = await fetch(
+        `http://localhost:5000/api/employees/current-employee-list`
+      )
       if (response.ok) {
         const data = await response.json()
-        setUserRoles(data) // Assuming data is an array of department names
+        setEmployees(data)
       } else {
-        console.error('Failed to fetch user roles.')
+        console.error('Failed to fetch employee list.')
       }
     } catch (error) {
       console.error('Error:', error)
     }
   }
 
-  // Fetch departments when the component mounts
   useEffect(() => {
-    fetchUserRoles()
+    fetchEmployees()
   }, [])
+
+  // Update salary when employeeId changes
+  useEffect(() => {
+    const selectedEmployee = employees.find(
+      (emp) => emp.employeeId === formData.employeeId
+    )
+    if (selectedEmployee) {
+      setFormData((prevData) => ({
+        ...prevData,
+        salary: selectedEmployee.salary || 0,
+      }))
+    }
+  }, [formData.employeeId, employees])
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -48,14 +61,12 @@ const FormPopUpSetRole: React.FC<FormPopUpSetRoleProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-
     try {
-      const url = `http://localhost:5000/api/users/set-role`
+      const url = `http://localhost:5000/api/employees/set-salary`
 
-      // Update the recentPassword to the newPassword
       const updatedFormData = {
         employeeId: formData.employeeId,
-        userRoleType: formData.userRole,
+        salary: formData.salary,
       }
 
       const response = await fetch(url, {
@@ -63,14 +74,14 @@ const FormPopUpSetRole: React.FC<FormPopUpSetRoleProps> = ({
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(updatedFormData), // Only send recentPassword (updated)
+        body: JSON.stringify(updatedFormData),
       })
 
       if (response.ok) {
         onClose()
-        onUpdateUser()
+        onSetSalary()
       } else {
-        console.error('Failed to update employee password.')
+        console.error('Failed to update employee salary.')
       }
     } catch (error) {
       console.error('Error:', error)
@@ -81,40 +92,40 @@ const FormPopUpSetRole: React.FC<FormPopUpSetRoleProps> = ({
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-[5px]">
       <div className="w-1/3 bg-white p-6 rounded-lg shadow-lg">
         <h2 className="text-center text-xl pb-2 mb-4 border-b border-border">
-          Set Role
+          Set Employee Salary
         </h2>
         <form
           className="px-2 overflow-auto max-h-[60vh] cus-scrollbar"
           onSubmit={handleSubmit}
         >
           <div className="mb-4 flex justify-between gap-2">
-            <div className="w-1/2">
+            <div className="w-2/3">
               <label className="block text-gray-700">Employee ID</label>
-              <input
-                type="employeeId"
-                name="employeeId"
-                className="w-full px-3 py-2 border rounded outline-none"
-                value={formData.employeeId}
-                disabled // Disable editing of email
-              />
-            </div>
-            <div className="w-1/2">
-              <label className="block text-gray-700">User Role</label>
               <select
-                id="userRole"
-                name="userRole"
+                id="employeeId"
+                name="employeeId"
                 required
-                value={formData.userRole}
+                value={formData.employeeId}
                 onChange={handleChange}
                 className="w-full px-3 py-2 border rounded outline-none"
               >
-                <option value="">Select Role</option>
-                {userRoles.map((userRole, index) => (
-                  <option key={index} value={userRole.userRoleType}>
-                    {userRole.userRoleType}
+                <option value="">Select Employee</option>
+                {employees.map((employee, index) => (
+                  <option key={index} value={employee.employeeId}>
+                    {employee.employeeId}
                   </option>
                 ))}
               </select>
+            </div>
+            <div className="w-1/3">
+              <label className="block text-gray-700">Salary</label>
+              <input
+                type="number"
+                name="salary"
+                className="w-full px-3 py-2 border rounded outline-none"
+                value={formData.salary}
+                onChange={handleChange}
+              />
             </div>
           </div>
 
@@ -130,7 +141,7 @@ const FormPopUpSetRole: React.FC<FormPopUpSetRoleProps> = ({
               type="submit"
               className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-transparent hover:text-blue-600 border border-blue-600"
             >
-              Confirm
+              {employee ? 'Update' : 'Add'}
             </button>
           </div>
         </form>
@@ -139,4 +150,4 @@ const FormPopUpSetRole: React.FC<FormPopUpSetRoleProps> = ({
   )
 }
 
-export default FormPopUpSetRole
+export default FormPopUpSetSalary
